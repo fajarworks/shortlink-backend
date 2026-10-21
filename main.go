@@ -7,10 +7,20 @@ import (
 	"os"
 
 	"github.com/fajarworks/shortlink-backend/config"
+	"github.com/fajarworks/shortlink-backend/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
+// @title           			Shortlink App
+// @version         			1.0
+// @description     			Aplication for eventhub API
+// @host      					localhost:8081
+// @BasePath  					/
+// @securityDefinitions.apikey 	BearerAuth
+// @in 							header
+// @name 						Authorization
+// @description 				Bearer token used as identiity for accessing backend
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -22,8 +32,9 @@ func main() {
 		log.Println("can't connect DB:", err)
 	}
 	defer pool.Close()
+	fmt.Println("berhasil connect db")
 
-	rc := config.NewRedis(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_NAME"), os.Getenv("REDIS_PASS"), os.Getenv("REDIS_PORT"))
+	rc := config.NewRedis(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_NAME"), os.Getenv("REDIS_PASSWORD"), os.Getenv("REDIS_PORT"))
 	rdb := rc.Connect()
 	defer rdb.Close()
 	status := rdb.Ping(context.Background())
@@ -31,11 +42,12 @@ func main() {
 	res, err := status.Result()
 	if err != nil {
 		fmt.Println("gagal connect redis : ", err)
-
+		return
 	}
 	fmt.Println(res)
 	fmt.Println("berhasil connect redis")
-	router := gin.Default()
-	router.Run(fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT")))
+	r := gin.Default()
+	router.MainRouter(r)
+	r.Run(fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT")))
 
 }
