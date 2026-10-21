@@ -69,7 +69,7 @@ func (h *HashConf) GenHash(password string) (string, error) {
 func ComparePassAndHash(password, hashedPass string) error {
 	result := strings.Split(hashedPass, "$")
 
-	if len(result) != 5 {
+	if len(result) != 6 {
 		return errInvalidHash
 	}
 	if result[1] != "argon2id" {

@@ -14,6 +14,13 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
   dto.Response:
     properties:
       message:
@@ -29,6 +36,40 @@ info:
   title: Shortlink App
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token with user information
+      parameters:
+      - description: Login credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid request or empty field
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Wrong email or password
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Login user
+      tags:
+      - Auth
   /auth/register:
     post:
       consumes:

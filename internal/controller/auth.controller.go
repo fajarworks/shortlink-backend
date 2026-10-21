@@ -48,12 +48,12 @@ func (c *AuthController) CreateUser(ctx *gin.Context) {
 		switch {
 		case errors.Is(err, utils.ErrFieldEmpty):
 			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Succes:  false,
+				Success: false,
 				Message: err.Error(),
 			})
 		case errors.Is(err, utils.ErrFieldEmpty):
 			ctx.JSON(http.StatusConflict, dto.ErrorResponse{
-				Succes:  false,
+				Success: false,
 				Message: err.Error(),
 			})
 		default:
@@ -68,5 +68,61 @@ func (c *AuthController) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, dto.Response{
 		Success: true,
 		Message: "user created",
+	})
+}
+
+// Login godoc
+// @Summary      Login user
+// @Description  Authenticate user and return JWT token with user information
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        payload body dto.LoginRequest true "Login credentials"
+// @Success      200 {object} dto.Response "Login successfully"
+// @Failure      400 {object} dto.ErrorResponse "Invalid request or empty field"
+// @Failure      401 {object} dto.ErrorResponse "Wrong email or password"
+// @Failure      500 {object} dto.ErrorResponse "Internal server error"
+// @Router       /auth/login [post]
+func (c *AuthController) Login(ctx *gin.Context) {
+	var payload dto.LoginRequest
+
+	if err := ctx.ShouldBindWith(&payload, binding.JSON); err != nil {
+		log.Println(err.Error())
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "server error occured",
+		})
+		return
+	}
+	user, token, err := c.service.Login(ctx, payload)
+	if err != nil {
+		switch {
+
+		case errors.Is(err, utils.ErrFieldEmpty):
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Success: false,
+				Message: err.Error(),
+			})
+		case errors.Is(err, utils.ErrWrongEmailPass):
+			ctx.JSON(http.StatusUnauthorized, dto.ErrorResponse{
+				Success: false,
+				Message: err.Error(),
+			})
+		default:
+			log.Println(err.Error())
+			ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+				Success: false,
+				Message: "server error occured",
+			})
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "login successfully",
+		Result: gin.H{
+			"token": token,
+			"user":  user,
+		},
 	})
 }
