@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fajarworks/shortlink-backend/config"
+	"github.com/fajarworks/shortlink-backend/internal/config"
 	"github.com/fajarworks/shortlink-backend/internal/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
