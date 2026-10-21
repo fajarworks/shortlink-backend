@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/fajarworks/shortlink-backend/config"
-	"github.com/fajarworks/shortlink-backend/router"
+	"github.com/fajarworks/shortlink-backend/internal/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -15,7 +15,7 @@ import (
 // @title           			Shortlink App
 // @version         			1.0
 // @description     			Aplication for eventhub API
-// @host      					localhost:8081
+// @host      					localhost:8080
 // @BasePath  					/
 // @securityDefinitions.apikey 	BearerAuth
 // @in 							header
