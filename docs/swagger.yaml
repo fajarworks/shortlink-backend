@@ -1,11 +1,68 @@
 basePath: /
-host: localhost:8081
+definitions:
+  dto.CreateUser:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.Response:
+    properties:
+      message:
+        type: string
+      result: {}
+      success:
+        type: boolean
+    type: object
+host: localhost:8080
 info:
   contact: {}
   description: Aplication for eventhub API
   title: Shortlink App
   version: "1.0"
-paths: {}
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully registered
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid request body or empty field
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Register new user
+      tags:
+      - Auth
 securityDefinitions:
   BearerAuth:
     description: Bearer token used as identiity for accessing backend
