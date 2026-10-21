@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    fullname VARCHAR(255) NOT NULL,
+    fullname VARCHAR(255),
     image_url VARCHAR(255),
     email VARCHAR(255) NOT NULL UNIQUE,
     password TEXT NOT NULL,
