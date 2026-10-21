@@ -1,0 +1,11 @@
+CREATE TABLE shortlinks (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    slug VARCHAR(20) NOT NULL UNIQUE,
+    destination_url TEXT NOT NULL,
+    click_count BIGINT NOT NULL DEFAULT 0 CHECK (click_count >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
