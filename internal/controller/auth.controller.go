@@ -8,6 +8,7 @@ import (
 	"github.com/fajarworks/shortlink-backend/internal/dto"
 	"github.com/fajarworks/shortlink-backend/internal/service"
 	"github.com/fajarworks/shortlink-backend/internal/utils"
+	"github.com/fajarworks/shortlink-backend/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -124,5 +125,55 @@ func (c *AuthController) Login(ctx *gin.Context) {
 			"token": token,
 			"user":  user,
 		},
+	})
+}
+
+// Logout godoc
+// @Summary      Logout user
+// @Description  Logout user by invalidating the current JWT token
+// @Tags         Auth
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  dto.Response
+// @Failure      401  {object}  dto.Response  "Unauthorized or invalid token"
+// @Failure      500  {object}  dto.Response  "Internal server error"
+// @Router       /auth/logout [post]
+func (c *AuthController) Logout(ctx *gin.Context) {
+	value, exists := ctx.Get("token")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "please login first",
+		})
+		return
+	}
+
+	claims, ok := value.(pkg.JWTClaims)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "invalid token",
+		})
+		return
+	}
+
+	err := c.service.Logout(
+		ctx.Request.Context(),
+		claims.Id,
+		claims.ID,
+		claims.ExpiresAt.Time,
+	)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "server error occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "logout successfully",
 	})
 }

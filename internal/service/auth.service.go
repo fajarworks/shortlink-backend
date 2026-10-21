@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/fajarworks/shortlink-backend/internal/dto"
 	"github.com/fajarworks/shortlink-backend/internal/model"
@@ -11,15 +13,18 @@ import (
 	"github.com/fajarworks/shortlink-backend/internal/utils"
 	"github.com/fajarworks/shortlink-backend/pkg"
 	"github.com/jackc/pgx/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
 	repo *repository.AuthRepo
+	rdb  *redis.Client
 }
 
-func NewAuthService(repo *repository.AuthRepo) *AuthService {
+func NewAuthService(repo *repository.AuthRepo, rdb *redis.Client) *AuthService {
 	return &AuthService{
 		repo: repo,
+		rdb:  rdb,
 	}
 
 }
@@ -81,4 +86,18 @@ func (s *AuthService) Login(ctx context.Context, payload dto.LoginRequest) (dto.
 		Email: user.Email,
 	}, token, nil
 
+}
+
+func (s *AuthService) Logout(ctx context.Context, userId int, jti string, expiresAt time.Time) error {
+
+	key := fmt.Sprintf("shortlink:blacklist:%s", jti)
+	ttl := time.Until(expiresAt)
+	if ttl <= 0 {
+		return nil
+	}
+
+	if err := s.rdb.Set(ctx, key, userId, ttl).Err(); err != nil {
+		return err
+	}
+	return nil
 }
