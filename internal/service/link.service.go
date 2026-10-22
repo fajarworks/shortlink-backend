@@ -76,3 +76,12 @@ func (s *LinkService) GetLinksByUserID(ctx context.Context, userID int) ([]dto.S
 
 	return responses, nil
 }
+
+func (s *LinkService) DeleteLinkByID(ctx context.Context, linkID int, userID int) (bool, error) {
+	deleted, err := s.repo.DeleteLinkByID(ctx, linkID, userID)
+	if err != nil {
+		return false, err
+	}
+
+	return deleted, nil
+}

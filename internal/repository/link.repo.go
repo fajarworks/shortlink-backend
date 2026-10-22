@@ -32,7 +32,7 @@ func (r *LinkRepo) CreateLink(ctx context.Context, link model.Link) (model.Link,
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return model.Link{}, utils.ERrSlugTaken
+			return model.Link{}, utils.ErrSlugTaken
 		}
 		return model.Link{}, err
 	}
@@ -87,4 +87,26 @@ func (r *LinkRepo) FindLinksByUserID(ctx context.Context, userID int) ([]model.L
 	}
 
 	return links, nil
+}
+
+func (r *LinkRepo) DeleteLinkByID(ctx context.Context, linkID int, userID int) (bool, error) {
+	query := `
+        UPDATE shortlinks
+        SET deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $1
+          AND user_id = $2
+          AND deleted_at IS NULL
+    `
+
+	result, err := r.db.Exec(ctx, query, linkID, userID)
+	if err != nil {
+		return false, err
+	}
+
+	if result.RowsAffected() == 0 {
+		return false, utils.ErrNoRows
+	}
+
+	return true, nil
 }

@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/fajarworks/shortlink-backend/internal/dto"
 	"github.com/fajarworks/shortlink-backend/internal/service"
@@ -126,5 +127,75 @@ func (c *LinkController) GetMyLinks(ctx *gin.Context) {
 		"success": true,
 		"message": "shortlinks retrieved successfully",
 		"data":    links,
+	})
+}
+
+// DeleteLink godoc
+// @Summary      Delete shortlink
+// @Description  Soft delete a shortlink owned by the authenticated user
+// @Tags         Links
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path int true "Shortlink ID"
+// @Success      200 {object} dto.Response
+// @Failure      400 {object} dto.Response "Invalid shortlink ID"
+// @Failure      401 {object} dto.Response "Unauthorized"
+// @Failure      404 {object} dto.Response "Shortlink not found"
+// @Failure      500 {object} dto.Response "Internal server error"
+// @Router       /links/{id} [delete]
+func (c *LinkController) DeleteLink(ctx *gin.Context) {
+	linkID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || linkID <= 0 {
+		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
+			Message: "invalid shortlink ID",
+		})
+		return
+	}
+
+	value, exists := ctx.Get("token")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "unauthorized",
+		})
+		return
+	}
+
+	claims, ok := value.(pkg.JWTClaims)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "invalid token",
+		})
+		return
+	}
+
+	deleted, err := c.service.DeleteLinkByID(
+		ctx.Request.Context(),
+		linkID,
+		claims.Id,
+	)
+	if err != nil {
+		log.Println("failed to delete shortlink:", err)
+
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "failed to delete shortlink",
+		})
+		return
+	}
+
+	if !deleted {
+		ctx.JSON(http.StatusNotFound, dto.Response{
+			Success: false,
+			Message: "shortlink not found",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "shortlink deleted successfully",
 	})
 }

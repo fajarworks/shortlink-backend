@@ -9,5 +9,6 @@ var (
 	ErrLengthSlug        = errors.New("slug must be 3-50 length of characters")
 	ErrReservedWord      = errors.New("slug can't use reserved word")
 	ErrFormatSlug        = errors.New("slug only contains alphanumeric and hypens")
-	ERrSlugTaken         = errors.New("slug already taken")
+	ErrSlugTaken         = errors.New("slug already taken")
+	ErrNoRows            = errors.New("no rows affected")
 )
