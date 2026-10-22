@@ -38,3 +38,53 @@ func (r *LinkRepo) CreateLink(ctx context.Context, link model.Link) (model.Link,
 	}
 	return data, nil
 }
+
+func (r *LinkRepo) FindLinksByUserID(ctx context.Context, userID int) ([]model.Link, error) {
+	query := `
+        SELECT
+            id,
+            user_id,
+            destination_url,
+            slug,
+            click_count,
+            created_at,
+            deleted_at
+        FROM shortlinks
+        WHERE user_id = $1
+          AND deleted_at IS NULL
+        ORDER BY created_at DESC
+    `
+
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	links := make([]model.Link, 0)
+
+	for rows.Next() {
+		var link model.Link
+
+		err := rows.Scan(
+			&link.Id,
+			&link.UserId,
+			&link.OriginalURL,
+			&link.Slug,
+			&link.ClickCount,
+			&link.CreatedAt,
+			&link.DeletedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return links, nil
+}

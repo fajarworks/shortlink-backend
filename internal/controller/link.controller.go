@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/fajarworks/shortlink-backend/internal/dto"
@@ -75,5 +76,55 @@ func (c *LinkController) CreateLink(ctx *gin.Context) {
 		Success: true,
 		Message: "Shortlink created successfully",
 		Result:  result,
+	})
+}
+
+// GetMyLinks godoc
+// @Summary      Get my shortlinks
+// @Description  Get all active shortlinks owned by the authenticated user
+// @Tags         Shortlinks
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {array} dto.ShortlinkResponse
+// @Failure      401 {object} dto.Response
+// @Failure      500 {object} dto.Response
+// @Router       /links [get]
+func (c *LinkController) GetMyLinks(ctx *gin.Context) {
+	value, exists := ctx.Get("token")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "unauthorized",
+		})
+		return
+	}
+
+	claims, ok := value.(pkg.JWTClaims)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "invalid token",
+		})
+		return
+	}
+
+	links, err := c.service.GetLinksByUserID(
+		ctx.Request.Context(),
+		claims.Id,
+	)
+	if err != nil {
+		log.Println("failed to get user links:", err)
+
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "failed to get shortlinks",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "shortlinks retrieved successfully",
+		"data":    links,
 	})
 }

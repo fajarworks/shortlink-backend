@@ -14,7 +14,8 @@ func LinkRouter(r *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	linkRouter := r.Group("links")
 	linkRepo := repository.NewLinkRepo(db)
 	linkService := service.NewLinkService(linkRepo)
-	linkCOntroller := controller.NewLinkController(linkService)
-	linkRouter.POST("", middleware.AuthMiddleware(rdb), linkCOntroller.CreateLink)
+	linkController := controller.NewLinkController(linkService)
+	linkRouter.POST("", middleware.AuthMiddleware(rdb), linkController.CreateLink)
+	linkRouter.GET("", middleware.AuthMiddleware(rdb), linkController.GetMyLinks)
 
 }

@@ -11,6 +11,6 @@ type ShortlinkResponse struct {
 	ID             int       `json:"id"`
 	Slug           string    `json:"slug"`
 	DestinationURL string    `json:"destination_url"`
-	ClickCount     int64     `json:"click_count"`
+	ClickCount     int       `json:"click_count"`
 	CreatedAt      time.Time `json:"created_at"`
 }

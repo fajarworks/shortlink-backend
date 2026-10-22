@@ -55,3 +55,24 @@ func (s *LinkService) CreateLink(ctx context.Context, userID int, link dto.Creat
 		CreatedAt:      data.CreatedAt,
 	}, nil
 }
+
+func (s *LinkService) GetLinksByUserID(ctx context.Context, userID int) ([]dto.ShortlinkResponse, error) {
+	links, err := s.repo.FindLinksByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.ShortlinkResponse, 0, len(links))
+
+	for _, link := range links {
+		responses = append(responses, dto.ShortlinkResponse{
+			ID:             link.Id,
+			Slug:           link.Slug,
+			DestinationURL: link.OriginalURL,
+			ClickCount:     link.ClickCount,
+			CreatedAt:      link.CreatedAt,
+		})
+	}
+
+	return responses, nil
+}
