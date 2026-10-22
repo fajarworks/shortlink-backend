@@ -110,3 +110,40 @@ func (r *LinkRepo) DeleteLinkByID(ctx context.Context, linkID int, userID int) (
 
 	return true, nil
 }
+
+func (r *LinkRepo) FindActiveLinkBySlug(ctx context.Context, slug string) (model.Link, error) {
+	query := `
+        SELECT
+            id,
+            user_id,
+            destination_url,
+            slug,
+            created_at,
+            deleted_at
+        FROM shortlinks
+        WHERE slug = $1
+          AND deleted_at IS NULL
+    `
+
+	var link model.Link
+
+	err := r.db.QueryRow(ctx, query, slug).Scan(
+		&link.Id,
+		&link.UserId,
+		&link.OriginalURL,
+		&link.Slug,
+		&link.CreatedAt,
+		&link.DeletedAt,
+	)
+	if err != nil {
+		return model.Link{}, err
+	}
+
+	return link, nil
+}
+
+func (r *LinkRepo) IncrementClickCount(ctx context.Context, slug string) error {
+	query := `UPDATE shortlinks SET click_count = click_count + 1 WHERE slug = $1`
+	_, err := r.db.Exec(ctx, query, slug)
+	return err
+}

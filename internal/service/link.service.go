@@ -85,3 +85,12 @@ func (s *LinkService) DeleteLinkByID(ctx context.Context, linkID int, userID int
 
 	return deleted, nil
 }
+
+func (s *LinkService) GetDestinationBySlug(ctx context.Context, slug string) (string, error) {
+	link, err := s.repo.FindActiveLinkBySlug(ctx, slug)
+	if err != nil {
+		return "", err
+	}
+	_ = s.repo.IncrementClickCount(ctx, slug)
+	return link.OriginalURL, nil
+}

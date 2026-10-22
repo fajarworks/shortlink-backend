@@ -281,7 +281,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Links"
+                    "Shortlinks"
                 ],
                 "summary": "Delete shortlink",
                 "parameters": [
@@ -311,6 +311,44 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
+                    },
+                    "404": {
+                        "description": "Shortlink not found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/{slug}": {
+            "get": {
+                "description": "Redirect to the original URL using a public slug",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shortlinks"
+                ],
+                "summary": "Redirect shortlink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortlink slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "Permanent redirect to destination URL"
                     },
                     "404": {
                         "description": "Shortlink not found",

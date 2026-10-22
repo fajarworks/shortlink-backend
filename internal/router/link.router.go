@@ -18,5 +18,6 @@ func LinkRouter(r *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	linkRouter.POST("", middleware.AuthMiddleware(rdb), linkController.CreateLink)
 	linkRouter.GET("", middleware.AuthMiddleware(rdb), linkController.GetMyLinks)
 	linkRouter.DELETE("/:id", middleware.AuthMiddleware(rdb), linkController.DeleteLink)
+	r.GET("/:slug", linkController.RedirectLink)
 
 }

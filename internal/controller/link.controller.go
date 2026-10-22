@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/fajarworks/shortlink-backend/internal/service"
 	"github.com/fajarworks/shortlink-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 type LinkController struct {
@@ -123,17 +125,17 @@ func (c *LinkController) GetMyLinks(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "shortlinks retrieved successfully",
-		"data":    links,
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "links retrieved successfully",
+		Result:  links,
 	})
 }
 
 // DeleteLink godoc
 // @Summary      Delete shortlink
 // @Description  Soft delete a shortlink owned by the authenticated user
-// @Tags         Links
+// @Tags         Shortlinks
 // @Security     BearerAuth
 // @Produce      json
 // @Param        id path int true "Shortlink ID"
@@ -198,4 +200,40 @@ func (c *LinkController) DeleteLink(ctx *gin.Context) {
 		Success: true,
 		Message: "shortlink deleted successfully",
 	})
+}
+
+// RedirectLink godoc
+// @Summary      Redirect shortlink
+// @Description  Redirect to the original URL using a public slug
+// @Tags         Shortlinks
+// @Produce      json
+// @Param        slug path string true "Shortlink slug"
+// @Success      301 "Permanent redirect to destination URL"
+// @Failure      404 {object} dto.Response "Shortlink not found"
+// @Failure      500 {object} dto.Response "Internal server error"
+// @Router       /{slug} [get]
+func (c *LinkController) RedirectLink(ctx *gin.Context) {
+	slug := ctx.Param("slug")
+
+	destinationURL, err := c.service.GetDestinationBySlug(ctx.Request.Context(), slug)
+	if err != nil {
+		log.Println(err.Error())
+		if errors.Is(err, pgx.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, dto.Response{
+				Success: false,
+				Message: "shortlink not found",
+			})
+			return
+		}
+
+		log.Println("failed to get shortlink:", err)
+
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "failed to redirect shortlink",
+		})
+		return
+	}
+
+	ctx.Redirect(http.StatusMovedPermanently, destinationURL)
 }

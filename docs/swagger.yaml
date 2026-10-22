@@ -58,6 +58,31 @@ info:
   title: Shortlink App
   version: "1.0"
 paths:
+  /{slug}:
+    get:
+      description: Redirect to the original URL using a public slug
+      parameters:
+      - description: Shortlink slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: Permanent redirect to destination URL
+        "404":
+          description: Shortlink not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Redirect shortlink
+      tags:
+      - Shortlinks
   /auth/login:
     post:
       consumes:
@@ -254,7 +279,7 @@ paths:
       - BearerAuth: []
       summary: Delete shortlink
       tags:
-      - Links
+      - Shortlinks
 securityDefinitions:
   BearerAuth:
     description: Bearer token used as identiity for accessing backend
