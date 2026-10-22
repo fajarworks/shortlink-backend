@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  dto.CreateShortlinkRequest:
+    properties:
+      destination_url:
+        type: string
+      slug:
+        type: string
+    required:
+    - destination_url
+    type: object
   dto.CreateUser:
     properties:
       email:
@@ -28,6 +37,19 @@ definitions:
       result: {}
       success:
         type: boolean
+    type: object
+  dto.ShortlinkResponse:
+    properties:
+      click_count:
+        type: integer
+      created_at:
+        type: string
+      destination_url:
+        type: string
+      id:
+        type: integer
+      slug:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -127,6 +149,51 @@ paths:
       summary: Register new user
       tags:
       - Auth
+  /links:
+    post:
+      consumes:
+      - application/json
+      description: Membuat shortlink baru dengan custom slug atau slug otomatis
+      parameters:
+      - description: Data shortlink
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShortlinkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                result:
+                  $ref: '#/definitions/dto.ShortlinkResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create shortlink
+      tags:
+      - Shortlinks
 securityDefinitions:
   BearerAuth:
     description: Bearer token used as identiity for accessing backend

@@ -12,4 +12,5 @@ import (
 func MainRouter(r *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	r.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	AuthRouter(r, db, rdb)
+	LinkRouter(r, db, rdb)
 }
