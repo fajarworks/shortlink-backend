@@ -32,7 +32,8 @@ func (r *AuthRepo) CreateUser(ctx context.Context, user model.User) error {
 }
 
 func (r *AuthRepo) FindUserByEmail(ctx context.Context, email string) (model.User, error) {
-	query := `SELECT id, email, fullname, image_url, password FROM users WHERE email = $1`
+	query := `SELECT id, email,  COALESCE(fullname, '') AS fullname, 
+    COALESCE(image_url, '') AS image_url, password FROM users WHERE email = $1`
 	var user model.User
 	if err := r.db.QueryRow(ctx, query, email).Scan(&user.ID, &user.Email, &user.FullName, &user.ImageURL, &user.Password); err != nil {
 		return model.User{}, err
